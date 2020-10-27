@@ -1,0 +1,278 @@
+---
+title: "Data Project Proposal"
+author: "Alexis Mekueko"
+date: "10/24/2020"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  slidy_presentation: default
+  beamer_presentation: default
+  ioslides_presentation: default
+header-includes:
+- \usepackage{tikz}
+- \usetikzlibrary{positioning,shapes.multipart,shapes}
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## R Packages
+
+```{r load-packages, message=FALSE}
+
+library(tidyverse) #loading all library needed for this assignment
+library(openintro)
+#head(fastfood)
+library(readxl)
+library(data.table)
+#library(DT)
+library(knitr)
+
+library(readr)
+#library(plyr)
+library(dplyr)
+library(stringr)
+#library(XML)
+#library(RCurl)
+#library(jsonlite)
+#library(httr)
+
+#library(maps)
+#library(dice)
+# #library(VennDiagram)
+# #library(help = "dice")
+#ibrary(DBI)
+#library(dbplyr)
+
+# library(rstudioapi)
+# library(RJDBC)
+# library(odbc)
+# library(RSQLite)
+# #library(rvest)
+
+#library(readtext)
+#library(ggpubr)
+#library(fitdistrplus)
+#library(ggplot2)
+#library(moments)
+#library(qualityTools)
+#library(normalp)
+#library(utils)
+#library(MASS)
+#library(qqplotr)
+library(DATA606)
+
+```
+
+Github Link: https://github.com/asmozo24/DATA606_Lab6
+
+Web link: https://rpubs.com/amekueko/681421
+
+
+
+### Introduction to linear regression
+
+
+The Human Freedom Index is a report that attempts to summarize the idea of “freedom” through a bunch of different variables for many countries around the globe. It serves as a rough objective measure for the relationships between the different types of freedom - whether it’s political, religious, economical or personal freedom - and other social and economic circumstances. The Human Freedom Index is an annually co-published report by the Cato Institute, the Fraser Institute, and the Liberales Institut at the Friedrich Naumann Foundation for Freedom.
+
+In this lab, you’ll be analyzing data from Human Freedom Index reports from 2008-2016. Your aim will be to summarize a few of the relationships within the data both graphically and numerically in order to find which variables can help tell a story about freedom.
+
+
+##The data
+The data we’re working with is in the openintro package and it’s called hfi, short for Human Freedom Index.
+
+#Exercice 1
+
+What are the dimensions of the dataset?
+Answer: 1458 rows, 123 columns, data collected from 2008 to 2016, 
+
+
+
+```{r}
+
+data(hfi)
+hfi
+glimpse(hfi)
+view(hfi)
+#summary(hfi)
+#dim(hfi)
+
+
+```
+
+#Exercice 2
+
+What type of plot would you use to display the relationship between the personal freedom score, pf_score, and one of the other numerical variables? Plot this relationship using the variable pf_expression_control as the predictor. Does the relationship look linear? If you knew a country’s pf_expression_control, or its score out of 10, with 0 being the most, of political pressures and controls on media content, would you be comfortable using a linear model to predict the personal freedom score?
+
+Answer: pf_score is numerical and one of the other numerical variables will make a 02 variables plot: I can use scatterplot of y against x [ plot(x,y)-cartesian or plot(x~y)-formula ] or box-and-whisker plot of y at levels of factor [plot(factor, y)] or heights from a vector of y values ([barplot(y)]). The relationship does not look linear, the data looks scatters. No, I would not be comfortable because on a large sample data, it is difficult to determine the type of plot. It is after carefully examining the variable with their observation that we can determine the type of plot which can fit.
+
+```{r}
+
+#hfi <- na.omit(hfi) # delete/remove the missings data because it is an imcomplete observation
+# somehow, the removing NA delete the entire dataset. 
+
+plot(hfi$pf_score ~ hfi$pf_expression_control)
+#plot (data = hfi, x = pf_expression_control, y = pf_score)
+ggplot(aes(x=pf_expression_control,y=pf_score ),data= hfi)+
+  geom_point()
+
+#If the relationship looks linear, we can quantify the strength of the relationship with the correlation coefficient.
+hfi %>%
+  summarise(cor(pf_expression_control, pf_score, use = "complete.obs"))
+#Here, we set the use argument to “complete.obs” since there are some observations of NA.
+
+
+
+```
+
+
+###Sum of squared residuals
+
+In this section, you will use an interactive function to investigate what we mean by “sum of squared residuals”. You will need to run this function in your console, not in your markdown document. Running the function also requires that the hfi dataset is loaded in your environment.
+
+Think back to the way that we described the distribution of a single variable. Recall that we discussed characteristics such as center, spread, and shape. It’s also useful to be able to describe the relationship of two numerical variables, such as pf_expression_control and pf_score above.
+
+
+#Exercice 3
+Looking at your plot from the previous exercise, describe the relationship between these two variables. Make sure to discuss the form, direction, and strength of the relationship as well as any unusual observations.
+Answer: Based on the corelation coefficient (0.7963894 ~ 0.8) , there is a strong corelation for a linear relation between pf_expression_control and pf_score. there are many points off which affect the linearity of the plot...
+
+```{r}
+
+ggplot(aes(x=pf_expression_control,y=pf_score , main = "Score per expression control"),data= hfi)+
+  geom_line()
+
+ggplot(hfi, aes(pf_expression_control, pf_score)) + geom_point()+
+  geom_smooth(method = "lm", se = FALSE) # + facet_wrap(~cyl)
+
+
+```
+
+
+Just as you’ve used the mean and standard deviation to summarize a single variable, you can summarize the relationship between these two variables by finding the line that best follows their association. Use the following interactive function to select the line that you think does the best job of going through the cloud of points.
+
+
+
+```{r}
+
+#this isn't working, wondering if we should just remove rows with NA
+#plot_ss(data = hfi, x = pf_expression_control, y = pf_score)
+#plot(hfi$pf_score ~ hfi$pf_expression_control)
+
+
+```
+After running this command, you’ll be prompted to click two points on the plot to define a line. Once you’ve done that, the line you specified will be shown in black and the residuals in blue. Note that there are 30 residuals, one for each of the 30 observations. Recall that the residuals are the difference between the observed values and the values predicted by the line: e1 = y_i - Y_i
+
+The most common way to do linear regression is to select the line that minimizes the sum of squared residuals. To visualize the squared residuals, you can rerun the plot command and add the argument showSquares = TRUE.
+
+
+```{r}
+
+plot(hfi$pf_score ~ hfi$pf_expression_control, showSquares = TRUE)
+#plot_ss(x = hfi$pf_expression_control, y = hfi$pf_score, showSquares = TRUE)
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+```
+
+Note that the output from the plot_ss function provides you with the slope and intercept of your line as well as the sum of squares.
+
+#Exercice 4
+Using plot_ss, choose a line that does a good job of minimizing the sum of squares. Run the function several times. What was the smallest sum of squares that you got? How does it compare to your neighbors?
+
+```{r}
+
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+
+```
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+
+
+```{r}
+
+plot_ss(x = pf_expression_control, y = pf_score, data = hfi, showSquares = TRUE)
+
+
+```
+
+#Conclusion 
+The New York Times API can be easy to use in scraping articles published on their website. However, I think the website it is pretty nested and need a better understanding of the New York Times website structure. 
+
+\tikzset{basic/.style={
+        draw,
+        rectangle split,
+        rectangle split parts=2,
+        rectangle split part fill={blue!20,white},
+        minimum width=2.5cm,
+        text width=2cm,
+        align=left,
+        font=\itshape
+    },
+    Diamond/.style={ diamond, 
+                        draw, 
+                        shape aspect=2, 
+                        inner sep = 2pt,
+                        text centered,
+                        fill=blue!10!white,
+                        font=\itshape
+                      }
+        }
+
+
