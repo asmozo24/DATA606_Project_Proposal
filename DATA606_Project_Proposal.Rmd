@@ -168,10 +168,18 @@ describe(study10below$G3)
 
 ggplot(student_math1, aes(x=studytime)) + geom_histogram() + ggtitle("Students Studying Time during school") 
 ggplot(student_math1, aes(x=G1)) + geom_histogram() + ggtitle("Students Performance during first period") # could add bandwith  binwidth = 1
+hist(student_math1$G1)
 ggplot(student_math1, aes(x=G2)) + geom_histogram() + ggtitle("Students Performance during second period")
+hist(student_math1$G2)
+
 ggplot(student_math1, aes(x=G3)) + geom_histogram() + ggtitle("Students overall Performance or final grade")
+hist(student_math1$G3)
+
 ggplot(study10plus, aes(x=G3)) + geom_histogram() + ggtitle("Students Studying +10hrs Weekly overall Performance or final grade")
+
 ggplot(study10below, aes(x=G3)) + geom_histogram() + ggtitle("Students Studying +10hrs Weekly overall Performance or final grade")
+hist(study10plus$G3)
+
 
 boxplot(study10plus$G3, study10below$G3, names = c("Students Studying +10hrs Weekly", "Students Studying -10hrs Weekly") )
 
